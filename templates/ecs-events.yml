@@ -1,0 +1,47 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: |
+  ECS Service for RubyApp
+
+Parameters:
+  ECSClusterArn:
+    Type: String
+    Default: "arn:aws:ecs:ap-northeast-1:865422985541:cluster/AppCluster"
+  ECSTaskRoleArn:
+    Type: String
+    Default: "arn:aws:iam::865422985541:role/ecsEventsRole"
+  ECSTaskDefinitionArn:
+    Type: String
+    Default: "arn:aws:ecs:ap-northeast-1:865422985541:task-definition/rubyapp:7"
+  SecurityGroup:
+    Type: String
+    Default: "sg-0d35ece540be770d0"
+  Subnet:
+    Type: String
+    Default: "subnet-06c191de1d0874f0f"
+
+Resources:
+  CloudWatchEvent:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: rubyapp-event
+      Description: run Embulk
+      ScheduleExpression: rate(5 minutes)
+      State: ENABLED
+      Targets:
+        - Arn: !Ref ECSClusterArn
+          RoleArn: !Ref ECSTaskRoleArn
+          Id: rubyapp
+          EcsParameters:
+            LaunchType: "FARGATE"
+            TaskCount: 1
+            TaskDefinitionArn: !Ref ECSTaskDefinitionArn
+            PlatformVersion: "LATEST"
+            NetworkConfiguration:
+              AwsVpcConfiguration:
+                AssignPublicIp: ENABLED
+                SecurityGroups:
+                  - !Ref SecurityGroup
+                Subnets:
+                  - !Ref Subnet

@@ -1,0 +1,25 @@
+version: "3.4"
+services:
+  ruby-githubstars:
+    command:
+    - ruby
+    - app.rb
+    environment:
+      AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: /creds
+      ECS_CONTAINER_METADATA_URI: http://169.254.170.2/v3
+    image: jacoyutorius/ruby-githubstars
+    labels:
+      ecs-local.task-definition-input.type: remote
+      ecs-local.task-definition-input.value: arn:aws:ecs:ap-northeast-1:865422985541:task-definition/rubyapp:6
+    logging:
+      driver: awslogs
+      options:
+        awslogs-group: /ecs/rubyapp
+        awslogs-region: ap-northeast-1
+        awslogs-stream-prefix: ecs
+    networks:
+      ecs-local-network: null
+    working_dir: /app
+networks:
+  ecs-local-network:
+    external: true
